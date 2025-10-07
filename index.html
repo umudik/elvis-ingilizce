@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İngilizce Kelime Öğrenme Uygulaması</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-book"></i> İngilizce Kelime Öğrenme</h1>
+                <p class="header-subtitle">Kelime haznenizi oluşturun ve öğrenmeye başlayın!</p>
+            </div>
+            <button class="theme-toggle" id="themeToggle" title="Tema Değiştir">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Add Word Section -->
+            <section class="add-word-section" id="addWordSection">
+                <h2><i class="fas fa-plus-circle"></i> Yeni Kelime Ekle</h2>
+                <div class="form-group">
+                    <label for="englishWord">İngilizce Kelime/Cümle:</label>
+                    <input type="text" id="englishWord" placeholder="Örnek: beautiful, break the ice">
+                </div>
+                <div class="form-group">
+                    <label for="turkishMeaning">Türkçe Anlam(lar):</label>
+                    <input type="text" id="turkishMeaning" placeholder="Örnek: güzel, güzel olan, güzel olmak">
+                </div>
+                <button class="btn btn-primary" id="addWordBtn">
+                    <i class="fas fa-plus"></i> Kelime Ekle
+                </button>
+            </section>
+
+            <!-- Game Controls Section -->
+            <section class="game-controls-section">
+                <h2><i class="fas fa-gamepad"></i> Kelime Oyunu</h2>
+                <div class="game-controls">
+                    <button class="btn btn-success" id="playBtn" disabled>
+                        <i class="fas fa-play"></i> Başlat
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" disabled>
+                        <i class="fas fa-stop"></i> Durdur
+                    </button>
+                </div>
+            </section>
+
+            <!-- Game Play Section (Hidden initially) -->
+            <section class="game-play-section" id="gamePlaySection" style="display: none;">
+                <div class="game-layout">
+                    <!-- Main Game Area -->
+                    <div class="game-content">
+                        <div class="question-card" id="questionCard">
+                            <div class="question-text" id="questionText">
+                                Oyunu başlatmak için yukarıdaki "Başlat" butonuna tıklayın
+                            </div>
+                            <div class="answer-input-container">
+                                <input type="text" id="answerInput" placeholder="Türkçe anlamını yazın..." disabled>
+                                <button class="btn btn-primary" id="checkAnswerBtn" disabled>
+                                    <i class="fas fa-check"></i> Kontrol Et
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="feedback" id="feedback">
+                            <div class="feedback-content" id="feedbackContent"></div>
+                        </div>
+                    </div>
+
+                    <!-- Side Panel for Answer History -->
+                    <div class="answer-history-panel" id="answerHistoryPanel">
+                        <h3><i class="fas fa-history"></i> Cevaplarım</h3>
+                        <div class="answer-stats">
+                            <div class="stat-correct">
+                                <i class="fas fa-check-circle"></i>
+                                <span id="liveCorrect">0</span> Doğru
+                            </div>
+                            <div class="stat-wrong">
+                                <i class="fas fa-times-circle"></i>
+                                <span id="liveWrong">0</span> Yanlış
+                            </div>
+                        </div>
+                        <div class="answer-list" id="answerList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Word List Section (Collapsible) -->
+            <section class="word-list-section">
+                <div class="word-list-header">
+                    <h2><i class="fas fa-list"></i> Kelime Listesi (<span id="wordCount">0</span> kelime)</h2>
+                    <button class="btn-toggle" id="toggleWordListBtn">
+                        <i class="fas fa-eye"></i>
+                        <span id="toggleText">Göster</span>
+                    </button>
+                </div>
+                <div class="word-list-container collapsed" id="wordListContainer">
+                    <div class="word-list" id="wordList">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Henüz kelime eklenmemiş. İlk kelimenizi ekleyin!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
