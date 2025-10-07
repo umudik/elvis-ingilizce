@@ -551,7 +551,8 @@ section h2 i {
 
 .word-list-container {
     max-height: 500px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     transition: max-height 0.3s ease;
 }
 
