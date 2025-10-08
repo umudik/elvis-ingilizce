@@ -522,6 +522,25 @@ section h2 i {
     justify-content: space-between;
     align-items: center;
     user-select: none;
+    margin-bottom: 15px;
+}
+
+.word-list-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.word-list-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.word-list-controls .btn {
+    flex: 1;
+    min-width: 150px;
+    justify-content: center;
 }
 
 .btn-toggle {
@@ -562,6 +581,7 @@ section h2 i {
 
 .word-list {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 15px;
     margin-top: 20px;
 }
@@ -569,10 +589,14 @@ section h2 i {
 .word-item {
     background: var(--card-secondary);
     border-radius: 12px;
-    padding: 20px;
+    padding: 15px;
     border: 2px solid var(--border-color);
     transition: all 0.3s ease;
     animation: slideIn 0.5s ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 140px;
 }
 
 .word-item:hover {
@@ -584,35 +608,85 @@ section h2 i {
 .word-item-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+    align-items: flex-start;
+    gap: 10px;
 }
 
 .word-english {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
+    flex: 1;
+    padding: 8px;
+    background: var(--input-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: text;
+    word-wrap: break-word;
+}
+
+.word-english:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
 .word-turkish {
     color: var(--text-secondary);
     font-style: italic;
+    padding: 8px;
+    background: var(--input-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: text;
+    flex: 1;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+}
+
+.word-turkish:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.word-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.edit-btn,
+.delete-btn {
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+}
+
+.edit-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
 }
 
 .delete-btn {
     background: linear-gradient(135deg, #f56565, #e53e3e);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
 }
 
 .delete-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
 }
 
 .empty-state {
@@ -767,5 +841,17 @@ section h2 i {
     
     .word-list-header h2 {
         font-size: 1.3rem;
+    }
+    
+    .word-list-controls {
+        flex-direction: column;
+    }
+    
+    .word-list-controls .btn {
+        width: 100%;
+    }
+    
+    .word-list {
+        grid-template-columns: 1fr;
     }
 }

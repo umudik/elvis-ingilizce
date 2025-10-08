@@ -75,10 +75,16 @@ function setupEventListeners() {
     });
     
     answerInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !checkAnswerBtn.disabled) {
+        if (e.key === 'Enter' && !checkAnswerBtn.disabled && answerInput.value.trim()) {
             checkAnswer();
         }
     });
+    
+    // File upload handler
+    const uploadInput = document.getElementById('uploadInput');
+    if (uploadInput) {
+        uploadInput.addEventListener('change', handleFileUpload);
+    }
 }
 
 function toggleWordList() {
@@ -215,6 +221,51 @@ function deleteWord(id) {
     }
 }
 
+function updateWord(id, field, newValue) {
+    const trimmedValue = newValue.trim();
+    
+    if (!trimmedValue) {
+        showNotification('Kelime boş olamaz!', 'error');
+        renderWordList();
+        return;
+    }
+    
+    const word = words.find(w => w.id === id);
+    if (!word) return;
+    
+    // Check if nothing changed
+    if (word[field] === trimmedValue) return;
+    
+    // Check if the English word already exists (when editing English field)
+    if (field === 'english') {
+        const duplicate = words.find(w => 
+            w.id !== id && w.english.toLowerCase() === trimmedValue.toLowerCase()
+        );
+        if (duplicate) {
+            showNotification('Bu kelime zaten mevcut!', 'warning');
+            renderWordList();
+            return;
+        }
+    }
+    
+    word[field] = trimmedValue;
+    saveData();
+    showNotification('Kelime güncellendi!', 'success');
+}
+
+function handleWordEdit(event) {
+    // Save on Enter key
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        event.target.blur();
+    }
+    // Cancel on Escape key
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        renderWordList();
+    }
+}
+
 // Game Functions
 function startGame() {
     if (words.length === 0) {
@@ -284,6 +335,13 @@ function checkAnswer() {
     if (gameState !== 'playing') return;
     
     const userAnswer = answerInput.value.trim().toLowerCase();
+    
+    // Check if answer is empty
+    if (!userAnswer) {
+        showFeedback('Lütfen bir cevap yazın!', 'wrong');
+        return;
+    }
+    
     const currentEnglish = questionText.textContent;
     
     // Find the word
@@ -292,9 +350,16 @@ function checkAnswer() {
     
     const correctAnswers = currentWord.turkish.toLowerCase().split(',').map(a => a.trim());
     
-    const isCorrect = correctAnswers.some(answer => 
-        userAnswer.includes(answer) || answer.includes(userAnswer)
-    );
+    // Check if answer contains or is contained by any correct answer
+    const isCorrect = correctAnswers.some(answer => {
+        const answerWords = answer.split(/\s+/);
+        const userWords = userAnswer.split(/\s+/);
+        
+        // Exact match or one contains the other
+        return userAnswer === answer || 
+               answerWords.some(aw => userWords.includes(aw)) ||
+               userWords.some(uw => answerWords.includes(uw));
+    });
     
     stats.totalQuestions++;
     
@@ -394,12 +459,24 @@ function renderWordList() {
     wordList.innerHTML = words.map(word => `
         <div class="word-item" data-id="${word.id}">
             <div class="word-item-header">
-                <div class="word-english">${word.english}</div>
-                <button class="delete-btn" onclick="deleteWord(${word.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="word-english" 
+                     contenteditable="true" 
+                     data-id="${word.id}" 
+                     data-field="english"
+                     onblur="updateWord(${word.id}, 'english', this.textContent)"
+                     onkeydown="handleWordEdit(event)">${word.english}</div>
+                <div class="word-actions">
+                    <button class="delete-btn" onclick="deleteWord(${word.id})" title="Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
-            <div class="word-turkish">${word.turkish}</div>
+            <div class="word-turkish" 
+                 contenteditable="true" 
+                 data-id="${word.id}" 
+                 data-field="turkish"
+                 onblur="updateWord(${word.id}, 'turkish', this.textContent)"
+                 onkeydown="handleWordEdit(event)">${word.turkish}</div>
         </div>
     `).join('');
 }
@@ -466,6 +543,130 @@ function getNotificationColor(type) {
         info: 'linear-gradient(135deg, #4299e1, #3182ce)'
     };
     return colors[type] || colors.info;
+}
+
+// Import/Export Functions
+function exportWords() {
+    if (words.length === 0) {
+        showNotification('Dışa aktarılacak kelime yok!', 'warning');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(words, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kelimeler-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showNotification(`${words.length} kelime dışa aktarıldı!`, 'success');
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!file.name.endsWith('.json')) {
+        showNotification('Lütfen geçerli bir JSON dosyası seçin!', 'error');
+        event.target.value = '';
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedWords = JSON.parse(e.target.result);
+            
+            if (!Array.isArray(importedWords)) {
+                throw new Error('Geçersiz dosya formatı');
+            }
+            
+            // Validate each word
+            const validWords = importedWords.filter(word => 
+                word.english && word.turkish && typeof word.english === 'string' && typeof word.turkish === 'string'
+            );
+            
+            if (validWords.length === 0) {
+                showNotification('Dosyada geçerli kelime bulunamadı!', 'error');
+                event.target.value = '';
+                return;
+            }
+            
+            // Ask for confirmation
+            const shouldMerge = confirm(
+                `${validWords.length} kelime bulundu.\n\n` +
+                `"Tamam" = Mevcut kelimelere ekle\n` +
+                `"İptal" = Tüm kelimeleri değiştir`
+            );
+            
+            if (shouldMerge) {
+                // Merge - remove duplicates based on English word
+                const existingEnglish = new Set(words.map(w => w.english.toLowerCase()));
+                const newWords = validWords.filter(w => 
+                    !existingEnglish.has(w.english.toLowerCase())
+                );
+                
+                // Assign new IDs to imported words
+                newWords.forEach(word => {
+                    word.id = Date.now() + Math.random();
+                    if (!word.createdAt) {
+                        word.createdAt = new Date().toISOString();
+                    }
+                });
+                
+                words.push(...newWords);
+                showNotification(`${newWords.length} yeni kelime eklendi! (${validWords.length - newWords.length} tekrar atlandı)`, 'success');
+            } else {
+                // Replace all
+                validWords.forEach(word => {
+                    word.id = Date.now() + Math.random();
+                    if (!word.createdAt) {
+                        word.createdAt = new Date().toISOString();
+                    }
+                });
+                words = validWords;
+                showNotification(`Tüm kelimeler değiştirildi! ${words.length} kelime yüklendi.`, 'success');
+            }
+            
+            saveData();
+            updateStats();
+            renderWordList();
+            updateGameControls();
+            
+        } catch (error) {
+            showNotification('Dosya okunamadı! Geçerli bir JSON dosyası olduğundan emin olun.', 'error');
+            console.error('Import error:', error);
+        }
+        
+        event.target.value = '';
+    };
+    
+    reader.onerror = function() {
+        showNotification('Dosya okuma hatası!', 'error');
+        event.target.value = '';
+    };
+    
+    reader.readAsText(file);
+}
+
+function clearAllWords() {
+    if (words.length === 0) {
+        showNotification('Silinecek kelime yok!', 'warning');
+        return;
+    }
+    
+    if (confirm(`${words.length} kelimenin HEPSİNİ silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!`)) {
+        words = [];
+        saveData();
+        updateStats();
+        renderWordList();
+        updateGameControls();
+        showNotification('Tüm kelimeler silindi!', 'info');
+    }
 }
 
 // Keyboard shortcuts
